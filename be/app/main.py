@@ -4,7 +4,6 @@ from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from app.middleware.langsmith_middleware import LangSmithMiddleware
 from app.api import qa
-
 app = FastAPI()
 
 # 添加CORS中间件
@@ -20,4 +19,3 @@ app.add_middleware(
 app.add_middleware(LangSmithMiddleware)
 
 app.include_router(qa.router, prefix="/api/v1")
-

@@ -1,4 +1,3 @@
-from langchain_openai import ChatOpenAI
 from app.config.openai_llm_config import get_openai_llm, is_openai_llm_ready
 from langchain_core.messages import HumanMessage
 

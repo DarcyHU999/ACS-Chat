@@ -5,7 +5,7 @@ from pydantic import BaseModel
 from typing import Literal
 from langchain_core.messages import SystemMessage, HumanMessage, AIMessage
 from app.services.llm import llm_service
-
+from app.services.embedding import embedding_service
 
 class HistoryMessage(BaseModel):
     role: Literal["system", "user", "assistant"]
@@ -26,6 +26,7 @@ async def qa(req: QARequest):
         history = req.history
         new_message = req.message
         configed_history = []
+        embedding_service()
         for hist in history:
             if hist.role == "system":
                 configed_history.append(SystemMessage(content=hist.content))
