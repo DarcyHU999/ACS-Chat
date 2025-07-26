@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  backend:
+    build: ./be
+    ports:
+      - "8000:8000"
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - LANGCHAIN_TRACING_V2=${LANGCHAIN_TRACING_V2}
+      - LANGCHAIN_ENDPOINT=${LANGCHAIN_ENDPOINT}
+      - LANGCHAIN_API_KEY=${LANGCHAIN_API_KEY}
+      - LANGCHAIN_PROJECT=${LANGCHAIN_PROJECT}
+    volumes:
+      - ./be:/app
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/docs"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  frontend:
+    build: ./fe
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./fe:/app
+      - /app/node_modules
+    environment:
+      - VITE_API_URL=http://localhost:8000
+    depends_on:
+      - backend
+    restart: unless-stopped 
+
+  qdrant:
+    image: qdrant/qdrant:v1.9.1   
+    container_name: qdrant
+    ports:
+      - "6333:6333"               # default API port
+    volumes:
+      - ./qdrant_data:/qdrant/storage   # data persistence
