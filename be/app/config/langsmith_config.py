@@ -43,5 +43,4 @@ def is_langsmith_enabled():
     """检查LangSmith是否启用"""
     return _langsmith_enabled
 
-# 初始化
 setup_langsmith() 

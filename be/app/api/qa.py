@@ -5,7 +5,9 @@ from pydantic import BaseModel
 from typing import Literal
 from langchain_core.messages import SystemMessage, HumanMessage, AIMessage
 from app.services.llm import llm_service
-from app.services.embedding import embedding_service
+from app.chains.qa_chain import qa_chain
+from app.services.vectorize_documents import embedding_service_file
+import inspect
 
 class HistoryMessage(BaseModel):
     role: Literal["system", "user", "assistant"]
@@ -22,11 +24,22 @@ router = APIRouter()
 
 @router.post("/qa")
 async def qa(req: QARequest):
+    """
+    Question-answering endpoint that processes user messages and returns streaming responses.
+    
+    Args:
+        req: QARequest containing conversation history and new message
+        
+    Returns:
+        StreamingResponse with generated answer chunks
+    """
     try:
+        # embedding_service_file("/Users/darcy/Desktop/target_cleaned")
         history = req.history
         new_message = req.message
         configed_history = []
-        embedding_service()
+        
+        # Convert history to LangChain message format
         for hist in history:
             if hist.role == "system":
                 configed_history.append(SystemMessage(content=hist.content))
@@ -38,11 +51,25 @@ async def qa(req: QARequest):
                 raise HTTPException(status_code=400, detail="Invalid role") 
 
         configed_history.append(HumanMessage(content=new_message))
-
+        
         async def generate_response():
+            """
+            Generate streaming response from QA chain.
+            """
             try:
-                for chunk in llm_service(configed_history, new_message):
-                    yield f"{chunk}"
+                # Get the generator from qa_chain
+                gen = qa_chain(configed_history, new_message)
+                
+                # Check if it's an async generator or regular generator
+                if inspect.isasyncgen(gen):
+                    # Handle async generator (normal LLM response)
+                    async for chunk in gen:
+                        yield f"{chunk}"
+                else:
+                    # Handle regular generator (content irrelevant response)
+                    for chunk in gen:
+                        yield f"{chunk}"
+                        
             except Exception as e:
                 yield f"data: error: {str(e)}"
         
