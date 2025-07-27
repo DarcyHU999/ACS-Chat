@@ -32,4 +32,4 @@ RUN npm install -g http-server
 EXPOSE 3000
 
 # 启动命令 - 使用 http-server 并配置代理
-CMD ["http-server", "dist", "-p", "3000", "-P", "http://backend:8000"] 
+CMD ["http-server", "dist", "-p", "3000", "-P", "http://backend:8000", "-c", "0"] 
