@@ -43,7 +43,7 @@ def qa_chain(history, new_message, top_k=5):
             return no_content_generator()
         
         # Retrieve relevant documents from vector store with lower threshold for better recall
-        docs = search_vectorstore(query_vector, top_k, similarity_threshold=0.3)
+        docs = search_vectorstore(query_vector, top_k, similarity_threshold=0.4)
         
         # Check if relevant documents were found
         if not docs or len(docs) == 0:

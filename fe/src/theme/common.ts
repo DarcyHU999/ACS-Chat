@@ -4,11 +4,25 @@ export const themeOptions: ThemeOptions = {
   palette: {
     mode: 'dark',
     primary: {
-      main: '#0f0',
+      main: '#E0E0E0', // silver white for user
+      contrastText: '#333333', // dark text for contrast
+    },
+    secondary: {
+      main: '#10a37f', // ChatGPT green color for assistant
+      light: '#4CAF50', // lighter green for link hover
+      contrastText: '#ffffff', // white text for contrast
     },
     background: {
       default: '#111111',
       paper: '#212121',
+    },
+    text: {
+      primary: '#ffffff',
+      secondary: '#b0b0b0',
+    },
+    divider: '#333333',
+    action: {
+      hover: '#2a2a2a',
     },
   },
   typography: {
