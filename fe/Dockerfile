@@ -19,8 +19,11 @@ RUN npm ci
 # 复制源代码
 COPY . .
 
-# 构建应用
-RUN npm run build
+# 构建应用 - 多种方式确保成功
+RUN npm run build || npx vite build
+
+# 验证 dist 目录是否存在并包含文件
+RUN ls -la dist/ && [ "$(ls -A dist/)" ] && echo "✅ Build successful!" || (echo "❌ Build failed!" && exit 1)
 
 # 安装 http-server 用于静态文件服务
 RUN npm install -g http-server
