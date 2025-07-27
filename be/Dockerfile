@@ -28,6 +28,27 @@ RUN pip install --no-cache-dir -r requirements.txt
 # 复制应用代码
 COPY . .
 
+# 检查 .env 文件是否存在
+RUN if [ ! -f ".env" ]; then \
+        echo "⚠️  .env file not found, creating from .env.example..."; \
+        if [ -f ".env.example" ]; then \
+            cp .env.example .env; \
+            echo "✅ Created .env from .env.example"; \
+        else \
+            echo "❌ No .env or .env.example file found!"; \
+            exit 1; \
+        fi; \
+    else \
+        echo "✅ .env file found"; \
+    fi
+
+# 验证必要的环境变量
+RUN if ! grep -q "OPENAI_API_KEY=" .env; then \
+        echo "⚠️  OPENAI_API_KEY not found in .env"; \
+    else \
+        echo "✅ Environment variables look good"; \
+    fi
+
 # 暴露端口
 EXPOSE 8000
 
