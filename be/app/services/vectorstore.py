@@ -1,4 +1,5 @@
 # vectorstore.py
+import os
 from langchain_qdrant import QdrantVectorStore
 from qdrant_client import QdrantClient
 from app.config.embedding_config import get_embedding
@@ -11,7 +12,10 @@ def init_qdrant_collection():
     """
     Ensure that the 'acs-chat' collection exists before QdrantVectorStore connects to it.
     """
-    client = QdrantClient(host="localhost", port=6333, check_compatibility=False)
+    # Use environment variable for Qdrant host, fallback to localhost for local development
+    import os
+    qdrant_host = os.getenv("QDRANT_HOST", "localhost")
+    client = QdrantClient(host=qdrant_host, port=6333, check_compatibility=False)
     collections = client.get_collections().collections
     if "acs-chat" not in [c.name for c in collections]:
         print("Creating collection: acs-chat")
@@ -29,7 +33,10 @@ def set_vectorstore():
     try:
         init_qdrant_collection()  # Collection must exist first
 
-        client = QdrantClient(host="localhost", port=6333, timeout=60, check_compatibility=False)
+        # Use environment variable for Qdrant host, fallback to localhost for local development
+        import os
+        qdrant_host = os.getenv("QDRANT_HOST", "localhost")
+        client = QdrantClient(host=qdrant_host, port=6333, timeout=60, check_compatibility=False)
 
         _vectorstore = QdrantVectorStore(
             client=client,
@@ -70,7 +77,9 @@ def search_vectorstore(query_vector: list[float], top_k: int, similarity_thresho
         print(f"Similarity threshold: {similarity_threshold}")
         
         # Use Qdrant client directly for search
-        client = QdrantClient(host="localhost", port=6333, check_compatibility=False)
+        import os
+        qdrant_host = os.getenv("QDRANT_HOST", "localhost")
+        client = QdrantClient(host=qdrant_host, port=6333, check_compatibility=False)
         search_results = client.search(
             collection_name="acs-chat",
             query_vector=query_vector,
@@ -95,5 +104,31 @@ def search_vectorstore(query_vector: list[float], top_k: int, similarity_thresho
         print(f"Error searching vectorstore: {e}")
         return []
 
-# Ensure vectorstore is initialized at import time
-set_vectorstore()
+# Initialize vectorstore with retry logic for Docker environment
+def initialize_with_retry(max_retries=5, delay=2):
+    """Initialize vectorstore with retry logic for Docker environment"""
+    import time
+    import os
+    
+    for attempt in range(max_retries):
+        try:
+            print(f"Attempting to initialize vectorstore (attempt {attempt + 1}/{max_retries})")
+            set_vectorstore()
+            print("Vectorstore initialized successfully!")
+            return
+        except Exception as e:
+            print(f"Attempt {attempt + 1} failed: {e}")
+            if attempt < max_retries - 1:
+                print(f"Retrying in {delay} seconds...")
+                time.sleep(delay)
+            else:
+                print("Max retries reached. Vectorstore initialization failed.")
+                raise e
+
+# Initialize with retry for Docker environment
+if os.getenv("QDRANT_HOST") == "qdrant":
+    # In Docker environment, use retry logic
+    initialize_with_retry()
+else:
+    # In local development, initialize immediately
+    set_vectorstore()
