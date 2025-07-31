@@ -1,165 +1,199 @@
 # ACS Chat
 
-一个基于 FastAPI 和 React 的聊天应用。
+A chat application based on FastAPI, LangChain, Qdrant vector database and React with TypeScript.
 
-## 快速开始
+## Features
 
-### 方式一：Docker（推荐）
+- 🤖 **AI-Powered Chat**: Powered by OpenAI GPT-4o-mini
+- 🔍 **Semantic Search**: Vector-based document retrieval using Qdrant
+- 📚 **Knowledge Base**: 31,000+ documents for comprehensive answers
+- 🚀 **Modern Stack**: FastAPI + React + TypeScript + Docker
+- 🔒 **Secure**: Production-ready with security configurations
+- 📊 **Monitoring**: LangSmith integration for debugging and monitoring
+
+## Architecture
+
+```
+┌─────────────┐    ┌─────────────┐    ┌─────────────┐    ┌─────────────┐
+│   Nginx     │    │  Frontend   │    │   Backend   │    │   Qdrant    │
+│   (Port 80) │◄──►│  (Port 3000)│◄──►│  (Port 8000)│◄──►│  (Port 6333)│
+└─────────────┘    └─────────────┘    └─────────────┘    └─────────────┘
+                                                           │
+                                                           └──► OpenAI API
+```
+
+## Quick Start
+
+### Method 1: Docker (Recommended)
 
 ```bash
-# 克隆项目
+# Clone the project
 git clone <repository-url>
 cd ACS-Chat
 
-# 启动所有服务
+# Start all services
 ./start.sh
 ```
 
-访问：
-- 前端：http://localhost:3000
-- 后端：http://localhost:8000
-- API 文档：http://localhost:8000/docs
+**Access URLs:**
+- **Frontend**: http://localhost (or your server IP)
+- **Backend API**: http://localhost/api/v1/
+- **API Documentation**: http://localhost/docs (disabled in production)
 
-### 方式二：本地开发
+### Method 2: Local Development
 
 ```bash
-# 克隆项目
+# Clone the project
 git clone <repository-url>
 cd ACS-Chat
 
-# 自动设置开发环境
+# Auto-setup development environment
 ./setup-dev.sh
 ```
 
-然后分别启动前后端：
+Then start frontend and backend separately:
 
 ```bash
-# 启动后端
+# Start backend
 cd be
 source .venv/bin/activate
 uvicorn app.main:app --reload
 
-# 启动前端（新终端）
+# Start frontend (new terminal)
 cd fe
 npm run dev
 ```
 
-## 环境要求
+## Requirements
 
-- Python 3.10+
-- Node.js 18+
-- Docker (可选)
+- **Python**: 3.10+
+- **Node.js**: 18+
+- **Docker**: 20.10+ (for Docker deployment)
+- **OpenAI API Key**: Required for AI functionality
 
-## 项目结构
+## Project Structure
 
 ```
 ACS-Chat/
-├── be/                 # 后端 (FastAPI)
+├── be/                          # Backend (FastAPI + LangChain)
 │   ├── app/
+│   │   ├── api/                 # API routes
+│   │   ├── chains/              # LangChain QA chains
+│   │   ├── config/              # Configuration files
+│   │   ├── middleware/          # Custom middleware
+│   │   ├── services/            # Business logic services
+│   │   └── util/                # Utility functions
 │   ├── requirements.txt
 │   └── Dockerfile
-├── fe/                 # 前端 (React + TypeScript)
+├── fe/                          # Frontend (React + TypeScript)
 │   ├── src/
+│   │   ├── components/          # React components
+│   │   ├── pages/               # Page components
+│   │   └── theme/               # UI theme
 │   ├── package.json
 │   └── Dockerfile
-├── docker-compose.yml  # Docker 编排
-├── setup-dev.sh       # 开发环境设置脚本
-└── start.sh           # Docker 启动脚本
+├── qdrant_data/                 # Vector database storage
+├── docker-compose.yml           # Docker orchestration
+├── nginx.conf                   # Nginx reverse proxy config
+├── setup-dev.sh                 # Development setup script
+├── start.sh                     # Docker startup script
+├── check-security.sh            # Security check script
+├── deploy-secure.sh             # Secure deployment script
+└── security-checklist.md        # Security guidelines
 ```
 
-## 环境变量
+## Environment Variables
 
-### 1. 复制环境变量模板
+### 1. Copy environment variable template
 ```bash
-cp be/env.example .env
+cp be/env.example be/.env
 ```
 
-### 2. 配置必要的环境变量
+### 2. Configure environment variables
 
-编辑 `.env` 文件，设置以下变量：
+Edit `be/.env` file:
 
-#### 必需配置
+#### Required Configuration
 ```env
-# OpenAI API 密钥（必需）
+# OpenAI API Key (Required)
 OPENAI_API_KEY=your_openai_api_key_here
 ```
 
-#### 可选配置
+#### Optional Configuration
 ```env
-# LangSmith 配置（可选，用于调试和监控）
-LANGCHAIN_TRACING_V2=true
-LANGCHAIN_ENDPOINT=https://api.smith.langchain.com
+# LangSmith Configuration (Optional, for debugging and monitoring)
 LANGCHAIN_API_KEY=your_langsmith_api_key_here
 LANGCHAIN_PROJECT=acs-chat
+LANGCHAIN_ENDPOINT=https://api.smith.langchain.com
 
-# 应用配置
-APP_ENV=development
-DEBUG=true
+# Server Configuration
+HOST=0.0.0.0
+PORT=8000
+DEBUG=True
 ```
 
-### 3. 获取 API 密钥
+### 3. Get API Keys
 
-#### OpenAI API 密钥
-1. 访问 [OpenAI Platform](https://platform.openai.com/api-keys)
-2. 创建新的 API 密钥
-3. 复制密钥到 `.env` 文件
+#### OpenAI API Key
+1. Visit [OpenAI Platform](https://platform.openai.com/api-keys)
+2. Create a new API key
+3. Copy the key to `be/.env`
 
-#### LangSmith API 密钥（可选）
-1. 访问 [LangSmith](https://smith.langchain.com/)
-2. 注册并获取 API 密钥
-3. 复制密钥到 `.env` 文件
+#### LangSmith API Key (Optional)
+1. Visit [LangSmith](https://smith.langchain.com/)
+2. Register and get an API key
+3. Copy the key to `be/.env`
 
-## 开发
+## Development
 
-### 后端开发
+### Backend Development
 
 ```bash
 cd be
 source .venv/bin/activate
-uvicorn app.main:app --reload
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-### 前端开发
+### Frontend Development
 
 ```bash
 cd fe
 npm run dev
 ```
 
-### 调试
+### Vector Database
 
-在 Cursor/VS Code 中：
-1. 设置断点
-2. 按 F5 启动调试
-3. 使用调试控制台
-
-## 部署
-
-### 使用 Docker
+The application uses Qdrant vector database with 31,000+ documents:
 
 ```bash
-# 构建镜像
-docker-compose build
-
-# 启动服务
-docker-compose up -d
-
-# 查看日志
-docker-compose logs -f
-
-# 停止服务
-docker-compose down
+# Check vector database status
+docker exec -it acs-chat-backend-1 python -c "
+from app.services.vectorstore import get_vectorstore
+print('Vector database ready:', get_vectorstore() is not None)
+"
 ```
 
-### 手动部署
+## Deployment
+
+### Production Deployment with Docker
 
 ```bash
-# 后端
+# Secure deployment (recommended)
+./deploy-secure.sh
+
+# Or manual deployment
+docker compose up -d
+```
+
+### Manual Deployment
+
+```bash
+# Backend
 cd be
 pip install -r requirements.txt
 uvicorn app.main:app --host 0.0.0.0 --port 8000
 
-# 前端
+# Frontend
 cd fe
 npm install
 npm run build
@@ -167,11 +201,38 @@ npm install -g serve
 serve -s dist -l 3000
 ```
 
-## 常见问题
+### Security Features
 
-### 1. 虚拟环境问题
+- ✅ **CORS Protection**: Restricted to specific domains
+- ✅ **Rate Limiting**: API rate limiting (10 req/s)
+- ✅ **Network Security**: Database and API ports local-only
+- ✅ **Production Hardening**: Debug mode disabled
+- ✅ **Reverse Proxy**: Nginx with security headers
+
+## Monitoring and Debugging
+
+### Check Service Status
 ```bash
-# 重新创建虚拟环境
+# View all services
+docker compose ps
+
+# Check logs
+docker compose logs -f
+
+# Security check
+./check-security.sh
+```
+
+### LangSmith Integration
+- Enable tracing for debugging
+- Monitor API usage and performance
+- Track conversation flows
+
+## Common Issues
+
+### 1. Environment Setup
+```bash
+# Recreate virtual environment
 cd be
 rm -rf .venv
 python3 -m venv .venv
@@ -179,28 +240,48 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### 2. 端口被占用
+### 2. Port Conflicts
 ```bash
-# 查看端口占用
+# Check and kill processes
 lsof -ti:8000 | xargs kill -9
 lsof -ti:3000 | xargs kill -9
 ```
 
-### 3. Docker 构建失败
+### 3. Docker Issues
 ```bash
-# 清理 Docker 缓存
+# Clean and rebuild
 docker system prune -a
-docker-compose build --no-cache
+docker compose build --no-cache
+docker compose up -d
 ```
 
-## 贡献
+### 4. Vector Database Issues
+```bash
+# Restart Qdrant
+docker compose restart qdrant
 
-1. Fork 项目
-2. 创建功能分支
-3. 提交更改
-4. 推送到分支
-5. 创建 Pull Request
+# Check Qdrant logs
+docker compose logs qdrant
+```
 
-## 许可证
+## Security Checklist
 
-MIT License
+- [ ] Set secure file permissions: `chmod 600 be/.env`
+- [ ] Configure AWS Security Groups (close ports 3000, 6333, 8000)
+- [ ] Set OpenAI API usage limits
+- [ ] Enable SSL/HTTPS
+- [ ] Regular security updates
+
+See `security-checklist.md` for detailed security guidelines.
+
+## Contributing
+
+1. Fork the project
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## License
+
+MIT License - see LICENSE file for details.

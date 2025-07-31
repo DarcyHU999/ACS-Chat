@@ -11,7 +11,7 @@ class LangSmithMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         start_time = time.time()
         
-        # 只对聊天API进行追踪
+        # Only trace chat API
         if request.url.path == "/api/v1/qa" and request.method == "POST":
             if is_langsmith_enabled():
                 try:
@@ -36,7 +36,7 @@ class LangSmithMiddleware(BaseHTTPMiddleware):
         
         response = await call_next(request)
         
-        # 更新运行记录
+        # Update run record
         if hasattr(request.state, 'langsmith_run_id'):
             if is_langsmith_enabled():
                 try:

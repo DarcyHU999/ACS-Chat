@@ -21,7 +21,7 @@ wheels/
 *.egg
 
 # Virtual environments
-# .env  # 注释掉，因为我们需要在 Docker 中使用 .env 文件
+# .env  # Commented out because we need to use .env file in Docker
 .venv
 env/
 venv/

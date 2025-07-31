@@ -39,7 +39,7 @@ def qa_chain(history, new_message, top_k=5):
         if query_vector is None:
             # If embedding fails, return "content irrelevant"
             def no_content_generator():
-                yield "内容不相关"
+                yield "Content not relevant"
             return no_content_generator()
 
         # Retrieve relevant documents from vector store with lower threshold for better recall
@@ -48,7 +48,7 @@ def qa_chain(history, new_message, top_k=5):
         # Check if relevant documents were found
         if not docs or len(docs) == 0:
             def no_content_generator():
-                yield "内容不相关"
+                yield "Content not relevant"
             return no_content_generator()
         
         # Build context from retrieved documents
@@ -93,7 +93,7 @@ def qa_chain(history, new_message, top_k=5):
         print(f"Error in qa_chain: {e}")
         # Return "content irrelevant" on any error
         def no_content_generator():
-            yield "内容不相关"
+            yield "Content not relevant"
         return no_content_generator()
     
 

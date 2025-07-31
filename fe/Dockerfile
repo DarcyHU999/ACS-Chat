@@ -1,35 +1,35 @@
-# 使用 Node.js 18 Alpine 镜像
+# Use Node.js 18 Alpine image
 FROM node:18-alpine
 
-# 添加构建参数，用于强制重新构建
+# Add build argument for forcing rebuild
 ARG BUILD_DATE=unknown
 
-# 安装系统依赖
+# Install system dependencies
 RUN apk add --no-cache curl
 
-# 设置工作目录
+# Set working directory
 WORKDIR /app
 
-# 复制依赖文件
+# Copy dependency files
 COPY package*.json ./
 
-# 安装 Python 依赖
+# Install Python dependencies
 RUN npm ci
 
-# 复制源代码
+# Copy source code
 COPY . .
 
-# 构建应用 - 多种方式确保成功
+# Build application - multiple ways to ensure success
 RUN npm run build || npx vite build
 
-# 验证 dist 目录是否存在并包含文件
+# Verify dist directory exists and contains files
 RUN ls -la dist/ && [ "$(ls -A dist/)" ] && echo "✅ Build successful!" || (echo "❌ Build failed!" && exit 1)
 
-# 安装 http-server 用于静态文件服务
+# Install http-server for static file serving
 RUN npm install -g http-server
 
-# 暴露端口
+# Expose port
 EXPOSE 3000
 
-# 启动命令 - 使用 http-server 并配置代理
+# Start command - use http-server with proxy configuration
 CMD ["http-server", "dist", "-p", "3000", "-P", "http://backend:8000", "-c", "0"] 
