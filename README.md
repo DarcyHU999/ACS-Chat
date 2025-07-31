@@ -18,8 +18,8 @@ A chat application based on FastAPI, LangChain, Qdrant vector database and React
 │   Nginx     │    │  Frontend   │    │   Backend   │    │   Qdrant    │
 │   (Port 80) │◄──►│  (Port 3000)│◄──►│  (Port 8000)│◄──►│  (Port 6333)│
 └─────────────┘    └─────────────┘    └─────────────┘    └─────────────┘
-                                                           │
-                                                           └──► OpenAI API
+                                             │
+                                             └──► OpenAI API
 ```
 
 ## Quick Start
