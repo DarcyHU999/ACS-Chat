@@ -153,7 +153,14 @@ log_info "Certificate auto-renewal configured"
 log_info "Cleaning existing services..."
 docker compose down 2>/dev/null || true
 
-# 12. Build services
+# 12. Build frontend locally first
+log_info "Building frontend locally..."
+cd fe
+npm ci
+npm run build
+cd ..
+
+# 13. Build Docker services
 log_info "Building Docker services..."
 docker compose build
 
