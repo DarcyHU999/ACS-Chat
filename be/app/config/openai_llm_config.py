@@ -4,7 +4,7 @@ from langchain_openai import ChatOpenAI
 
 load_dotenv()
 
-# 全局变量
+# Global variables
 _openai_llm = None
 
 def setup_openai_llm():
