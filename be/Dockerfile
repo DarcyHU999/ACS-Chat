@@ -52,5 +52,5 @@ RUN if ! grep -q "OPENAI_API_KEY=" .env; then \
 # Expose port
 EXPOSE 8000
 
-# Start command - wait for Qdrant to be ready before starting
-CMD ["wait-for-it", "qdrant:6333", "--timeout=60", "--", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"] 
+# Start command - no longer need to wait for Qdrant since we're using Qdrant Cloud
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"] 

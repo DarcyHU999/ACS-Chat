@@ -5,21 +5,23 @@ A chat application based on FastAPI, LangChain, Qdrant vector database and React
 ## Features
 
 - 🤖 **AI-Powered Chat**: Powered by OpenAI GPT-4o-mini
-- 🔍 **Semantic Search**: Vector-based document retrieval using Qdrant
+- 🔍 **Semantic Search**: Vector-based document retrieval using Qdrant Cloud
 - 📚 **Knowledge Base**: 31,000+ documents for comprehensive answers
 - 🚀 **Modern Stack**: FastAPI + React + TypeScript + Docker
-- 🔒 **Secure**: Production-ready with security configurations
+- 🔒 **Secure**: Production-ready with HTTPS and security configurations
 - 📊 **Monitoring**: LangSmith integration for debugging and monitoring
+- 💾 **Log Management**: Optimized for small instances (t3a.nano)
+- ☁️ **Cloud Infrastructure**: Qdrant Cloud for better performance and cost optimization
 
 ## Architecture
 
 ```
 ┌─────────────┐    ┌─────────────┐    ┌─────────────┐    ┌─────────────┐
-│   Nginx     │    │  Frontend   │    │   Backend   │    │   Qdrant    │
-│   (Port 80) │◄──►│  (Port 3000)│◄──►│  (Port 8000)│◄──►│  (Port 6333)│
+│   Nginx     │    │  Frontend   │    │   Backend   │    │ Qdrant Cloud│
+│ (Port 80/443)│◄──►│  (Port 3000)│◄──►│  (Port 8000)│◄──►│  (Cloud API)│
 └─────────────┘    └─────────────┘    └─────────────┘    └─────────────┘
-                                             │
-                                             └──► OpenAI API
+                                            │
+                                            └──► OpenAI API
 ```
 
 ## Quick Start
@@ -36,9 +38,9 @@ cd ACS-Chat
 ```
 
 **Access URLs:**
-- **Frontend**: http://localhost (or your server IP)
-- **Backend API**: http://localhost/api/v1/
-- **API Documentation**: http://localhost/docs (disabled in production)
+- **Frontend**: https://acschat.cc (HTTPS)
+- **Backend API**: https://acschat.cc/api/v1/
+- **API Documentation**: https://acschat.cc/docs (disabled in production)
 
 ### Method 2: Local Development
 
@@ -92,13 +94,14 @@ ACS-Chat/
 │   │   └── theme/               # UI theme
 │   ├── package.json
 │   └── Dockerfile
-├── qdrant_data/                 # Vector database storage
+├── nginx.conf                   # Nginx reverse proxy config
 ├── docker-compose.yml           # Docker orchestration
 ├── nginx.conf                   # Nginx reverse proxy config
 ├── setup-dev.sh                 # Development setup script
 ├── start.sh                     # Docker startup script
 ├── check-security.sh            # Security check script
 ├── deploy-secure.sh             # Secure deployment script
+├── manage-logs.sh               # Log management script
 └── security-checklist.md        # Security guidelines
 ```
 
@@ -130,6 +133,13 @@ LANGCHAIN_ENDPOINT=https://api.smith.langchain.com
 HOST=0.0.0.0
 PORT=8000
 DEBUG=True
+
+# Qdrant Cloud Configuration (Production)
+QDRANT_URL=https://your-cluster.cloud.qdrant.io
+QDRANT_API_KEY=your_qdrant_api_key_here
+
+# Local Qdrant Configuration (Development)
+# QDRANT_HOST=localhost
 ```
 
 ### 3. Get API Keys
@@ -163,19 +173,70 @@ npm run dev
 
 ### Vector Database
 
-The application uses Qdrant vector database with 31,000+ documents:
+The application uses Qdrant Cloud vector database with 31,000+ documents:
 
 ```bash
 # Check vector database status
-docker exec -it acs-chat-backend-1 python -c "
+docker compose exec backend python -c "
 from app.services.vectorstore import get_vectorstore
 print('Vector database ready:', get_vectorstore() is not None)
 "
+
+# Check Qdrant Cloud connection
+docker compose exec backend python -c "
+from qdrant_client import QdrantClient
+import os
+client = QdrantClient(url=os.getenv('QDRANT_URL'), api_key=os.getenv('QDRANT_API_KEY'))
+info = client.get_collection('ACS-Chat')
+print(f'Data points: {info.points_count}')
+"
 ```
 
-## Deployment
+## Infrastructure Migration
 
-### Production Deployment with Docker
+### Qdrant Cloud Migration
+
+The application has been migrated from local Qdrant to Qdrant Cloud for better performance and cost optimization:
+
+#### Benefits
+- ✅ **Cost Reduction**: No local database storage and maintenance
+- ✅ **Better Performance**: Cloud-optimized infrastructure
+- ✅ **Scalability**: Automatic scaling with usage
+- ✅ **Reliability**: 99.9% uptime guarantee
+- ✅ **Security**: Enterprise-grade security
+
+#### Migration Details
+- **Data Points**: 31,091 documents migrated
+- **Vector Dimension**: 1536
+- **Collection Name**: ACS-Chat
+- **Connection**: HTTPS with API key authentication
+
+#### Configuration
+```env
+# Qdrant Cloud Configuration
+QDRANT_URL=https://your-cluster.cloud.qdrant.io
+QDRANT_API_KEY=your_qdrant_api_key_here
+```
+
+### Instance Optimization
+
+The application is now optimized for **t3a.nano** instances:
+
+#### Memory Usage (Optimized)
+- **Backend**: 123MB
+- **Frontend**: 25MB
+- **Nginx**: 8MB
+- **Docker**: 63MB
+- **System**: 50MB
+- **Total**: ~269MB < 512MB (t3a.nano limit)
+
+#### Cost Savings
+- **Before**: t3.small ($20/month) + local Qdrant
+- **After**: t3a.nano ($3.5/month) + Qdrant Cloud (free tier)
+- **Monthly Savings**: $16.5
+- **Annual Savings**: $198
+
+## Deployment
 
 ```bash
 # Secure deployment (recommended)
@@ -208,6 +269,43 @@ serve -s dist -l 3000
 - ✅ **Network Security**: Database and API ports local-only
 - ✅ **Production Hardening**: Debug mode disabled
 - ✅ **Reverse Proxy**: Nginx with security headers
+
+## Log Management (Optimized for t3a.nano)
+
+### Automatic Log Management
+The application includes optimized log management for small instances:
+
+```bash
+# Check disk usage and log statistics
+./manage-logs.sh usage
+
+# View log statistics
+./manage-logs.sh stats
+
+# Clean old logs manually
+./manage-logs.sh clean
+
+# Configure log rotation
+./manage-logs.sh configure
+```
+
+### Log Configuration
+- **Docker Logs**: Limited to 10MB per container, max 3 files
+- **Qdrant Logs**: Limited to 20MB, max 5 files
+- **Auto Cleanup**: Daily at 2:00 AM via cron job
+- **System Logs**: 7-day retention with compression
+
+### Disk Space Optimization
+```bash
+# Monitor disk usage
+df -h /
+
+# Check Docker log sizes
+sudo du -sh /var/lib/docker/containers/*/logs
+
+# Clean up old logs immediately
+./manage-logs.sh clean
+```
 
 ## Monitoring and Debugging
 
@@ -257,20 +355,41 @@ docker compose up -d
 
 ### 4. Vector Database Issues
 ```bash
-# Restart Qdrant
-docker compose restart qdrant
+# Check Qdrant Cloud connection
+docker compose exec backend python -c "
+from qdrant_client import QdrantClient
+import os
+try:
+    client = QdrantClient(url=os.getenv('QDRANT_URL'), api_key=os.getenv('QDRANT_API_KEY'))
+    info = client.get_collection('ACS-Chat')
+    print(f'Qdrant Cloud connected, data points: {info.points_count}')
+except Exception as e:
+    print(f'Qdrant Cloud connection failed: {e}')
+"
+```
 
-# Check Qdrant logs
-docker compose logs qdrant
+### 5. Disk Space Issues
+```bash
+# Check disk usage
+./manage-logs.sh usage
+
+# Clean logs
+./manage-logs.sh clean
+
+# Remove unused Docker resources
+docker system prune -f
 ```
 
 ## Security Checklist
 
 - [ ] Set secure file permissions: `chmod 600 be/.env`
-- [ ] Configure AWS Security Groups (close ports 3000, 6333, 8000)
+- [ ] Configure AWS Security Groups (close ports 3000, 8000)
 - [ ] Set OpenAI API usage limits
-- [ ] Enable SSL/HTTPS
+- [ ] Enable SSL/HTTPS ✅ (Configured)
 - [ ] Regular security updates
+- [ ] Monitor disk usage and logs
+- [ ] Configure Qdrant Cloud API key ✅ (Configured)
+- [ ] Enable HSTS headers ✅ (Configured)
 
 See `security-checklist.md` for detailed security guidelines.
 

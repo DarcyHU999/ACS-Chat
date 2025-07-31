@@ -11,9 +11,20 @@ _vectorstore = None
 def set_vectorstore():
     global _vectorstore
     try:
-        # Use environment variable for Qdrant host, fallback to localhost for local development
-        qdrant_host = os.getenv("QDRANT_HOST", "localhost")
-        client = QdrantClient(host=qdrant_host, port=6333, check_compatibility=False)
+        # Check if using Qdrant Cloud
+        qdrant_url = os.getenv("QDRANT_URL")
+        qdrant_api_key = os.getenv("QDRANT_API_KEY")
+        
+        if qdrant_url and qdrant_api_key:
+            # Use Qdrant Cloud
+            client = QdrantClient(
+                url=qdrant_url,
+                api_key=qdrant_api_key
+            )
+        else:
+            # Use local Qdrant
+            qdrant_host = os.getenv("QDRANT_HOST", "localhost")
+            client = QdrantClient(host=qdrant_host, port=6333, check_compatibility=False)
 
         # Create QdrantVectorStore
         _vectorstore = QdrantVectorStore(
@@ -48,8 +59,20 @@ def search_vectorstore(query_vector: list[float], top_k: int, similarity_thresho
     """
     try:
         # Use Qdrant client directly for search
-        qdrant_host = os.getenv("QDRANT_HOST", "localhost")
-        client = QdrantClient(host=qdrant_host, port=6333, check_compatibility=False)
+        qdrant_url = os.getenv("QDRANT_URL")
+        qdrant_api_key = os.getenv("QDRANT_API_KEY")
+        
+        if qdrant_url and qdrant_api_key:
+            # Use Qdrant Cloud
+            client = QdrantClient(
+                url=qdrant_url,
+                api_key=qdrant_api_key
+            )
+        else:
+            # Use local Qdrant
+            qdrant_host = os.getenv("QDRANT_HOST", "localhost")
+            client = QdrantClient(host=qdrant_host, port=6333, check_compatibility=False)
+            
         search_results = client.search(
             collection_name="ACS-Chat",
             query_vector=query_vector,
