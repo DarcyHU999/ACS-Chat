@@ -10,6 +10,7 @@ A chat application based on FastAPI, LangChain, Qdrant vector database and React
 - 🚀 **Modern Stack**: FastAPI + React + TypeScript + Docker
 - 🔒 **Secure**: Production-ready with security configurations
 - 📊 **Monitoring**: LangSmith integration for debugging and monitoring
+- 💾 **Log Management**: Optimized for small instances (t3.small)
 
 ## Architecture
 
@@ -99,6 +100,7 @@ ACS-Chat/
 ├── start.sh                     # Docker startup script
 ├── check-security.sh            # Security check script
 ├── deploy-secure.sh             # Secure deployment script
+├── manage-logs.sh               # Log management script
 └── security-checklist.md        # Security guidelines
 ```
 
@@ -209,6 +211,43 @@ serve -s dist -l 3000
 - ✅ **Production Hardening**: Debug mode disabled
 - ✅ **Reverse Proxy**: Nginx with security headers
 
+## Log Management (Optimized for t3.small)
+
+### Automatic Log Management
+The application includes optimized log management for small instances:
+
+```bash
+# Check disk usage and log statistics
+./manage-logs.sh usage
+
+# View log statistics
+./manage-logs.sh stats
+
+# Clean old logs manually
+./manage-logs.sh clean
+
+# Configure log rotation
+./manage-logs.sh configure
+```
+
+### Log Configuration
+- **Docker Logs**: Limited to 10MB per container, max 3 files
+- **Qdrant Logs**: Limited to 20MB, max 5 files
+- **Auto Cleanup**: Daily at 2:00 AM via cron job
+- **System Logs**: 7-day retention with compression
+
+### Disk Space Optimization
+```bash
+# Monitor disk usage
+df -h /
+
+# Check Docker log sizes
+sudo du -sh /var/lib/docker/containers/*/logs
+
+# Clean up old logs immediately
+./manage-logs.sh clean
+```
+
 ## Monitoring and Debugging
 
 ### Check Service Status
@@ -264,6 +303,18 @@ docker compose restart qdrant
 docker compose logs qdrant
 ```
 
+### 5. Disk Space Issues
+```bash
+# Check disk usage
+./manage-logs.sh usage
+
+# Clean logs
+./manage-logs.sh clean
+
+# Remove unused Docker resources
+docker system prune -f
+```
+
 ## Security Checklist
 
 - [ ] Set secure file permissions: `chmod 600 be/.env`
@@ -271,6 +322,7 @@ docker compose logs qdrant
 - [ ] Set OpenAI API usage limits
 - [ ] Enable SSL/HTTPS
 - [ ] Regular security updates
+- [ ] Monitor disk usage and logs
 
 See `security-checklist.md` for detailed security guidelines.
 
